@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  rabbitmq-devtrackr:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-devtrackr
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    networks:
+      - devtrackr-net
+
+  auth-db-devtrackr:
+    image: postgres:15
+    container_name: auth-db-devtrackr
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: authdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - devtrackr_auth_pgdata:/var/lib/postgresql/data
+    networks:
+      - devtrackr-net
+
+  authservice-devtrackr:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    container_name: authservice-devtrackr
+    depends_on:
+      - auth-db-devtrackr
+      - rabbitmq-devtrackr
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=auth-db-devtrackr;Port=5432;Database=authdb;Username=admin;Password=admin123
+    ports:
+      - "5101:80"
+    networks:
+      - devtrackr-net
+
+volumes:
+  devtrackr_auth_pgdata:
+
+networks:
+  devtrackr-net:
+    driver: bridge
