@@ -24,6 +24,20 @@ services:
     networks:
       - devtrackr-net
 
+  user-db-devtrackr:
+    image: postgres:15
+    container_name: user-db-devtrackr
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: userdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - devtrackr_user_pgdata:/var/lib/postgresql/data
+    networks:
+      - devtrackr-net
+
   authservice-devtrackr:
     build:
       context: .
@@ -35,12 +49,27 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=auth-db-devtrackr;Port=5432;Database=authdb;Username=admin;Password=admin123
     ports:
-      - "5101:80"
+      - "5101:8080"
+    networks:
+      - devtrackr-net
+
+  userservice-devtrackr:
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    container_name: userservice-devtrackr
+    depends_on:
+      - user-db-devtrackr
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=user-db-devtrackr;Port=5432;Database=userdb;Username=admin;Password=admin123
+    ports:
+      - "5102:8080"
     networks:
       - devtrackr-net
 
 volumes:
   devtrackr_auth_pgdata:
+  devtrackr_user_pgdata:
 
 networks:
   devtrackr-net:
