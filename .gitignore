@@ -10,6 +10,8 @@
 *.userosscache
 *.sln.docstates
 
+# Local environment token (GITHUB_TOKEN)
+.env
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
