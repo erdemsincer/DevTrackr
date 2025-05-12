@@ -79,9 +79,41 @@ services:
     networks:
       - devtrackr-net
 
+
+  task-db-devtrackr:
+    image: postgres:15
+    container_name: task-db-devtrackr
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: taskdb
+    ports:
+      - "5436:5432"
+    volumes:
+      - devtrackr_task_pgdata:/var/lib/postgresql/data
+    networks:
+      - devtrackr-net
+
+  taskservice-devtrackr:
+    build:
+      context: .
+      dockerfile: TaskService/Dockerfile
+    container_name: taskservice-devtrackr
+    depends_on:
+      - task-db-devtrackr
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=task-db-devtrackr;Port=5432;Database=taskdb;Username=admin;Password=admin123
+    ports:
+      - "5103:8080"
+    networks:
+      - devtrackr-net
+
+
 volumes:
   devtrackr_auth_pgdata:
   devtrackr_user_pgdata:
+  devtrackr_task_pgdata:
+
 
 networks:
   devtrackr-net:
