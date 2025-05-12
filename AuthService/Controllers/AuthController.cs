@@ -1,7 +1,8 @@
 ﻿using AuthService.Data;
 using AuthService.DTOs;
 using AuthService.Models;
-using Microsoft.AspNetCore.Http;
+using Events;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,11 +18,13 @@ namespace AuthService.Controllers
     {
         private readonly AuthDbContext _context;
         private readonly IConfiguration _config;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public AuthController(AuthDbContext context, IConfiguration config)
+        public AuthController(AuthDbContext context, IConfiguration config, IPublishEndpoint publishEndpoint)
         {
             _context = context;
             _config = config;
+            _publishEndpoint = publishEndpoint;
         }
 
         [HttpPost("register")]
@@ -37,11 +40,24 @@ namespace AuthService.Controllers
                 GitHubUsername = dto.GitHubUsername,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
                 RefreshToken = string.Empty,
-                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7)
+                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7),
+                Role = "User"
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+
+            // 🔥 EVENT GÖNDER
+            await _publishEndpoint.Publish(new UserCreatedEvent
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role,
+                GitHubUsername = user.GitHubUsername,
+                
+            });
+
             return Ok("Kayıt başarılı");
         }
 

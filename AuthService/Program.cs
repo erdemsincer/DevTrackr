@@ -1,4 +1,5 @@
 ﻿using AuthService.Data;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,7 +8,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔐 JWT Ayarları
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq-devtrackr", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
