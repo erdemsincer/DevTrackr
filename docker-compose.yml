@@ -108,11 +108,41 @@ services:
     networks:
       - devtrackr-net
 
+  pomodoro-db-devtrackr:
+    image: postgres:15
+    container_name: pomodoro-db-devtrackr
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: pomodorodb
+    ports:
+      - "5437:5432"
+    volumes:
+      - devtrackr_pomodoro_pgdata:/var/lib/postgresql/data
+    networks:
+      - devtrackr-net
+
+  pomodoroservice-devtrackr:
+    build:
+      context: .
+      dockerfile: PomodoroService/Dockerfile
+    container_name: pomodoroservice-devtrackr
+    depends_on:
+      - pomodoro-db-devtrackr
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=pomodoro-db-devtrackr;Port=5432;Database=pomodorodb;Username=admin;Password=admin123
+    ports:
+      - "5104:8080"
+    networks:
+      - devtrackr-net
+
 
 volumes:
   devtrackr_auth_pgdata:
   devtrackr_user_pgdata:
   devtrackr_task_pgdata:
+  devtrackr_pomodoro_pgdata:
+
 
 
 networks:
