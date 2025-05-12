@@ -67,6 +67,18 @@ services:
     networks:
       - devtrackr-net
 
+  activityservice-devtrackr:
+    build:
+      context: .
+      dockerfile: ActivityService/Dockerfile
+    container_name: activityservice-devtrackr
+    ports:
+      - "5200:8080"
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - devtrackr-net
+
 volumes:
   devtrackr_auth_pgdata:
   devtrackr_user_pgdata:
