@@ -3,11 +3,22 @@ using PomodoroService.Data;
 using PomodoroService.DTOs;
 using PomodoroService.Interfaces;
 using PomodoroService.Models;
+using Events;
+using MassTransit;
 
 namespace PomodoroService.Services
 {
-    public class PomodoroService(PomodoroDbContext _context) : IPomodoroService
+    public class PomodoroService : IPomodoroService
     {
+        private readonly PomodoroDbContext _context;
+        private readonly IPublishEndpoint _publishEndpoint;
+
+        public PomodoroService(PomodoroDbContext context, IPublishEndpoint publishEndpoint)
+        {
+            _context = context;
+            _publishEndpoint = publishEndpoint;
+        }
+
         public async Task<ResultPomodoroDto?> StartSessionAsync(int userId, CreatePomodoroDto dto)
         {
             var session = new PomodoroSession
@@ -35,6 +46,13 @@ namespace PomodoroService.Services
             session.IsCompleted = true;
 
             await _context.SaveChangesAsync();
+
+            // 🔥 PomodoroCompletedEvent fırlat
+            await _publishEndpoint.Publish(new PomodoroCompletedEvent
+            {
+                UserId = userId
+            });
+
             return true;
         }
 
@@ -46,6 +64,15 @@ namespace PomodoroService.Services
                 .ToListAsync();
 
             return sessions.Select(MapToDto).ToList();
+        }
+
+        public async Task<List<string>> GetCompletedPomodorosAsync(int userId)
+        {
+            return await _context.Sessions
+                .Where(x => x.UserId == userId && x.IsCompleted)
+                .OrderByDescending(x => x.EndTime)
+                .Select(x => $"Focused {x.FocusMinutes} min, Break {x.BreakMinutes} min on {x.StartTime:yyyy-MM-dd HH:mm}")
+                .ToListAsync();
         }
 
         private static ResultPomodoroDto MapToDto(PomodoroSession session)
@@ -60,16 +87,5 @@ namespace PomodoroService.Services
                 IsCompleted = session.IsCompleted
             };
         }
-
-        public async Task<List<string>> GetCompletedPomodorosAsync(int userId)
-        {
-            return await _context.Sessions
-                .Where(x => x.UserId == userId && x.IsCompleted)
-                .OrderByDescending(x => x.EndTime)
-                .Select(x => $"Focused {x.FocusMinutes} min, Break {x.BreakMinutes} min on {x.StartTime:yyyy-MM-dd HH:mm}")
-                .ToListAsync();
-        }
-
-
     }
 }
