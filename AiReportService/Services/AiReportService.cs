@@ -1,6 +1,7 @@
 ﻿using AiReportService.Data;
 using AiReportService.Entities;
 using AiReportService.External;
+using Microsoft.EntityFrameworkCore;
 
 namespace AiReportService.Services
 {
@@ -59,5 +60,26 @@ namespace AiReportService.Services
                 await GenerateReportAsync(userId);
             }
         }
+
+        public async Task<string> GenerateQuickReportAsync(int userId)
+        {
+            var tasks = await _taskClient.GetCompletedTasksAsync(userId);
+            var pomodoros = await _pomodoroClient.GetCompletedPomodorosAsync(userId);
+
+            var summary = await _openAiService.GenerateSummaryAsync(new(), tasks, pomodoros);
+            Console.WriteLine($"⚡ Kısa analiz üretildi: {summary}");
+
+            return summary;
+        }
+
+        public async Task<List<AiReport>> GetReportsByUserIdAsync(int userId)
+        {
+            return await _context.Reports
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.GeneratedAt)
+                .ToListAsync();
+        }
+
+
     }
 }

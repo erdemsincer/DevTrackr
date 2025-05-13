@@ -6,5 +6,8 @@ namespace AiReportService.Services
     {
         Task<AiReport> GenerateReportAsync(int userId);
         Task GenerateWeeklyReportsAsync();
+        Task<string> GenerateQuickReportAsync(int userId);
+        Task<List<AiReport>> GetReportsByUserIdAsync(int userId);
+
     }
 }
