@@ -4,6 +4,7 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ["TaskService/TaskService.csproj", "TaskService/"]
+COPY ./Shared ./Shared
 RUN dotnet restore "TaskService/TaskService.csproj"
 COPY . .
 WORKDIR "/src/TaskService"
