@@ -44,6 +44,14 @@ namespace UserService.Controllers
 
             return Ok(result.GitHubUsername); // sadece string
         }
+        [HttpGet("ids")]
+        public async Task<IActionResult> GetAllUserIds()
+        {
+            var users = await _userService.GetAllUsersAsync();
+            var ids = users.Select(u => u.Id).ToList();
+            return Ok(ids);
+        }
+
 
 
     }

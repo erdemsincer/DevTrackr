@@ -1,4 +1,5 @@
 ﻿using UserService.DTOs;
+using UserService.Models;
 
 namespace UserService.Interfaces
 {
@@ -6,5 +7,7 @@ namespace UserService.Interfaces
     {
         Task<UserDto?> GetProfileAsync(int userId);
         Task<bool> UpdateProfileAsync(int userId, UpdateUserDto dto);
+        Task<List<User>> GetAllUsersAsync();
+
     }
 }

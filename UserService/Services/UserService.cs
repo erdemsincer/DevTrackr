@@ -1,6 +1,8 @@
-﻿using UserService.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using UserService.Data;
 using UserService.DTOs;
 using UserService.Interfaces;
+using UserService.Models;
 
 namespace UserService.Services
 {
@@ -41,5 +43,10 @@ namespace UserService.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
     }
 }
