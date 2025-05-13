@@ -37,5 +37,15 @@ namespace PomodoroService.Controllers
             var sessions = await _pomodoroService.GetSessionsAsync(GetUserId());
             return Ok(sessions);
         }
+        [HttpGet("{userId}/completed")]
+        public async Task<IActionResult> GetCompletedPomodoros(int userId)
+        {
+            if (userId != GetUserId())
+                return Forbid();
+
+            var completedSessions = await _pomodoroService.GetCompletedPomodorosAsync(userId);
+            return Ok(completedSessions);
+        }
+
     }
 }
