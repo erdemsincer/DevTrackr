@@ -51,5 +51,15 @@ namespace TaskService.Controllers
             var success = await _taskService.DeleteAsync(GetUserId(), id);
             return success ? NoContent() : NotFound();
         }
+        [HttpGet("{userId}/completed")]
+        public async Task<IActionResult> GetCompletedTasks(int userId)
+        {
+            if (userId != GetUserId())
+                return Forbid();
+
+            var completedTasks = await _taskService.GetCompletedTasksAsync(userId);
+            return Ok(completedTasks);
+        }
+
     }
 }
