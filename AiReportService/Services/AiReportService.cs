@@ -11,32 +11,32 @@ namespace AiReportService.Services
         private readonly ITaskClient _taskClient;
         private readonly IPomodoroClient _pomodoroClient;
         private readonly OpenAiService _openAiService;
+        private readonly IUserClient _userClient;
 
         public AiReportService(
             AiReportDbContext context,
             IActivityClient activityClient,
             ITaskClient taskClient,
             IPomodoroClient pomodoroClient,
-            OpenAiService openAiService)
+            OpenAiService openAiService,
+            IUserClient userClient) // 👈 eklendi
         {
             _context = context;
             _activityClient = activityClient;
             _taskClient = taskClient;
             _pomodoroClient = pomodoroClient;
             _openAiService = openAiService;
+            _userClient = userClient;
         }
 
         public async Task<AiReport> GenerateReportAsync(int userId)
         {
-            // 1. Verileri çek
             var commits = await _activityClient.GetRecentCommitsAsync(userId);
             var tasks = await _taskClient.GetCompletedTasksAsync(userId);
             var pomodoros = await _pomodoroClient.GetCompletedPomodorosAsync(userId);
 
-            // 2. OpenAI'den özet al
             var summary = await _openAiService.GenerateSummaryAsync(commits, tasks, pomodoros);
 
-            // 3. Veritabanına kaydet
             var report = new AiReport
             {
                 UserId = userId,
@@ -48,6 +48,16 @@ namespace AiReportService.Services
             await _context.SaveChangesAsync();
 
             return report;
+        }
+
+        // ✅ Haftalık toplu rapor
+        public async Task GenerateWeeklyReportsAsync()
+        {
+            var userIds = await _userClient.GetAllUserIdsAsync(); // external HTTP call
+            foreach (var userId in userIds)
+            {
+                await GenerateReportAsync(userId);
+            }
         }
     }
 }

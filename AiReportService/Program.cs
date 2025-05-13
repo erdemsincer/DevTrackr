@@ -1,16 +1,38 @@
-﻿using AiReportService.Data;
+﻿using AiReportService.Consumers;
+using AiReportService.Data;
 using AiReportService.External;
+using AiReportService.Jobs;
 using AiReportService.Services;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Quartz;
 using System.Net.Http.Headers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<UserRegisteredConsumer>();
 
-// 🔐 JWT Auth
+    x.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host("rabbitmq-devtrackr", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("user-registered-event", e =>
+        {
+            e.ConfigureConsumer<UserRegisteredConsumer>(ctx);
+        });
+    });
+});
+
+// JWT Ayarları
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? "supersecret");
 
@@ -35,25 +57,28 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// 🌐 HttpClient DI
+// HttpContextAccessor (Token alabilmek için)
 builder.Services.AddHttpContextAccessor();
 
+// HttpClient DI Bağlantıları
 builder.Services.AddHttpClient<IActivityClient, ActivityClient>(c =>
 {
     c.BaseAddress = new Uri("http://activityservice-devtrackr:8080");
 });
-
 builder.Services.AddHttpClient<ITaskClient, TaskClient>(c =>
 {
     c.BaseAddress = new Uri("http://taskservice-devtrackr:8080");
 });
-
 builder.Services.AddHttpClient<IPomodoroClient, PomodoroClient>(c =>
 {
     c.BaseAddress = new Uri("http://pomodoroservice-devtrackr:8080");
 });
+builder.Services.AddHttpClient<IUserClient, UserClient>(c =>
+{
+    c.BaseAddress = new Uri("http://userservice-devtrackr:8080");
+});
 
-// 🤖 OpenAI
+// OpenAI Servisi
 builder.Services.AddHttpClient<OpenAiService>(client =>
 {
     client.BaseAddress = new Uri("https://api.openai.com/v1/");
@@ -64,14 +89,29 @@ builder.Services.AddHttpClient<OpenAiService>(client =>
     }
 });
 
-// 🧠 Uygulama servisleri
+// Uygulama Servisleri
 builder.Services.AddScoped<IAiReportService, AiReportService.Services.AiReportService>();
 
-// 🗄️ DbContext
+// Quartz Zamanlayıcı: Her Pazar 03:00'te çalışır
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("WeeklyReportJob");
+
+    q.AddJob<GenerateWeeklyReportsJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("WeeklyReportJob-trigger")
+        .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(DayOfWeek.Sunday, 3, 0)));
+});
+
+builder.Services.AddQuartzHostedService();
+
+// DbContext
 builder.Services.AddDbContext<AiReportDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 🧪 Swagger
+// Swagger + JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -103,9 +143,9 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddControllers();
 
+// Pipeline
 var app = builder.Build();
 
-// 🧩 Middleware Pipeline
 app.UseSwagger();
 app.UseSwaggerUI();
 
