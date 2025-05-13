@@ -32,5 +32,19 @@ namespace UserService.Controllers
             var updated = await _userService.UpdateProfileAsync(int.Parse(userId), dto);
             return updated ? NoContent() : NotFound();
         }
+        [Authorize]
+        [HttpGet("github-username")]
+        public async Task<IActionResult> GetGithubUsername()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            var result = await _userService.GetProfileAsync(int.Parse(userId));
+            if (result == null || string.IsNullOrEmpty(result.GitHubUsername)) return NotFound();
+
+            return Ok(result.GitHubUsername); // sadece string
+        }
+
+
     }
 }
