@@ -58,6 +58,12 @@ namespace AuthService.Controllers
                 
             });
 
+            await _publishEndpoint.Publish(new UserRegisteredEvent
+            {
+                UserId = user.Id
+            });
+
+
             return Ok("Kayıt başarılı");
         }
 
