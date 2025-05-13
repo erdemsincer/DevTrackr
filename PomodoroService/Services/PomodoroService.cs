@@ -60,5 +60,16 @@ namespace PomodoroService.Services
                 IsCompleted = session.IsCompleted
             };
         }
+
+        public async Task<List<string>> GetCompletedPomodorosAsync(int userId)
+        {
+            return await _context.Sessions
+                .Where(x => x.UserId == userId && x.IsCompleted)
+                .OrderByDescending(x => x.EndTime)
+                .Select(x => $"Focused {x.FocusMinutes} min, Break {x.BreakMinutes} min on {x.StartTime:yyyy-MM-dd HH:mm}")
+                .ToListAsync();
+        }
+
+
     }
 }
