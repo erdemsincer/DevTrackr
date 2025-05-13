@@ -1,4 +1,4 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
   rabbitmq-devtrackr:
@@ -136,12 +136,47 @@ services:
     networks:
       - devtrackr-net
 
+  aireport-db-devtrackr:
+    image: postgres:15
+    container_name: aireport-db-devtrackr
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: aireportdb
+    ports:
+      - "5438:5432"
+    volumes:
+      - devtrackr_aireport_pgdata:/var/lib/postgresql/data
+    networks:
+      - devtrackr-net
+
+
+  aireportservice-devtrackr:
+    build:
+      context: .
+      dockerfile: AiReportService/Dockerfile
+    container_name: aireportservice-devtrackr
+    depends_on:
+      - userservice-devtrackr
+      - activityservice-devtrackr
+      - taskservice-devtrackr
+      - pomodoroservice-devtrackr
+    env_file:
+      - .env                    # ✅ .env dosyasını ekledik
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=aireport-db-devtrackr;Port=5432;Database=aireportdb;Username=admin;Password=admin123
+    ports:
+      - "5300:8080"
+    networks:
+      - devtrackr-net
+
 
 volumes:
   devtrackr_auth_pgdata:
   devtrackr_user_pgdata:
   devtrackr_task_pgdata:
   devtrackr_pomodoro_pgdata:
+  devtrackr_aireport_pgdata:
 
 
 
