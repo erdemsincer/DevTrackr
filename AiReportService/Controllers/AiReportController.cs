@@ -29,5 +29,22 @@ namespace AiReportService.Controllers
             var report = await _aiReportService.GenerateReportAsync(userId);
             return Ok(report);
         }
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetReportsByUser(int userId)
+        {
+            var reports = await _aiReportService.GetReportsByUserIdAsync(userId);
+            return Ok(reports);
+        }
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyReports()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var reports = await _aiReportService.GetReportsByUserIdAsync(userId);
+            return Ok(reports);
+        }
+
+
+
     }
 }

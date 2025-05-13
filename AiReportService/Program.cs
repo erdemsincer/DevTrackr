@@ -16,6 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<UserRegisteredConsumer>();
+    x.AddConsumer<TaskCompletedConsumer>();              // ✅ ekledik
+    x.AddConsumer<PomodoroCompletedConsumer>();          // ✅ ekledik
 
     x.UsingRabbitMq((ctx, cfg) =>
     {
@@ -29,8 +31,19 @@ builder.Services.AddMassTransit(x =>
         {
             e.ConfigureConsumer<UserRegisteredConsumer>(ctx);
         });
+
+        cfg.ReceiveEndpoint("task-completed-event", e =>
+        {
+            e.ConfigureConsumer<TaskCompletedConsumer>(ctx);  // ✅ yeni
+        });
+
+        cfg.ReceiveEndpoint("pomodoro-completed-event", e =>
+        {
+            e.ConfigureConsumer<PomodoroCompletedConsumer>(ctx);  // ✅ yeni
+        });
     });
 });
+
 
 // JWT Ayarları
 var jwtSettings = builder.Configuration.GetSection("Jwt");
