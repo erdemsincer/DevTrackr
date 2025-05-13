@@ -93,5 +93,15 @@ namespace TaskService.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<string>> GetCompletedTasksAsync(int userId)
+        {
+            return await _context.Tasks
+                .Where(t => t.UserId == userId && t.IsCompleted)
+                .OrderByDescending(t => t.CompletedAt)
+                .Select(t => t.Title)
+                .ToListAsync();
+        }
+
     }
 }
