@@ -6,27 +6,54 @@ namespace ActivityService.Services
 {
     public class ActivityService : IActivityService
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _githubClient;
+        private readonly HttpClient _userClient;
         private readonly IConfiguration _config;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ActivityService(HttpClient httpClient, IConfiguration config)
+        public ActivityService(
+            IHttpClientFactory httpClientFactory,
+            IConfiguration config,
+            IHttpContextAccessor httpContextAccessor)
         {
-            _httpClient = httpClient;
+            _githubClient = httpClientFactory.CreateClient("GitHubClient");
+            _userClient = httpClientFactory.CreateClient("UserClient");
             _config = config;
+            _httpContextAccessor = httpContextAccessor;
 
             var githubToken = _config["GitHub:Token"];
             Console.WriteLine("📦 Token Loaded: " + githubToken);
 
             if (!string.IsNullOrEmpty(githubToken))
             {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("token", githubToken);
+                _githubClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("token", githubToken);
             }
 
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new System.Net.Http.Headers.ProductInfoHeaderValue("DevTrackr", "1.0"));
+            _githubClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("DevTrackr", "1.0"));
         }
 
+        // 🔥 Kullanıcı ID üzerinden GitHub username alır → GitHub verisi çeker
+        public async Task<ActivitySummaryDto> GetActivitySummaryAsync(int userId)
+        {
+            // ✅ JWT token'ı forward et
+            var token = _httpContextAccessor.HttpContext?.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+            if (!string.IsNullOrEmpty(token))
+            {
+                _userClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
 
+            var response = await _userClient.GetAsync("/api/User/github-username");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("GitHub kullanıcı adı alınamadı.");
+
+            var githubUsername = await response.Content.ReadAsStringAsync();
+            githubUsername = githubUsername.Replace("\"", ""); // JSON string düzelt
+
+            return await GetActivitySummaryAsync(githubUsername);
+        }
+
+        // 🔧 GitHub username üzerinden verileri çeker
         public async Task<ActivitySummaryDto> GetActivitySummaryAsync(string githubUsername)
         {
             var repos = await GetReposAsync(githubUsername);
@@ -35,8 +62,7 @@ namespace ActivityService.Services
             foreach (var repo in repos)
             {
                 var url = $"https://api.github.com/repos/{githubUsername}/{repo.Name}/contributors";
-                var response = await _httpClient.GetAsync(url);
-
+                var response = await _githubClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode) continue;
 
                 var content = await response.Content.ReadAsStringAsync();
@@ -79,7 +105,7 @@ namespace ActivityService.Services
         private async Task<List<GitHubRepoDto>> GetReposAsync(string githubUsername)
         {
             var url = $"https://api.github.com/users/{githubUsername}/repos";
-            var response = await _httpClient.GetAsync(url);
+            var response = await _githubClient.GetAsync(url);
 
             Console.WriteLine($"🔎 Fetching repos for: {githubUsername}, status: {response.StatusCode}");
 
@@ -92,6 +118,5 @@ namespace ActivityService.Services
                 PropertyNameCaseInsensitive = true
             }) ?? new List<GitHubRepoDto>();
         }
-
     }
 }
