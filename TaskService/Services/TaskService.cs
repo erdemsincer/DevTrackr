@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Events;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using TaskService.Data;
 using TaskService.DTOs;
 using TaskService.Interfaces;
@@ -10,10 +12,14 @@ namespace TaskService.Services
     {
         private readonly TaskDbContext _context;
 
-        public TaskService(TaskDbContext context)
+        private readonly IPublishEndpoint _publishEndpoint;
+
+        public TaskService(TaskDbContext context, IPublishEndpoint publishEndpoint)
         {
             _context = context;
+            _publishEndpoint = publishEndpoint;
         }
+
 
         public async Task<List<ResultTaskDto>> GetAllAsync(int userId)
         {
@@ -77,12 +83,26 @@ namespace TaskService.Services
 
             task.Title = dto.Title;
             task.Description = dto.Description;
+
+            // Önceki tamamlanma durumu false → şimdi true olduysa event fırlat
+            var wasCompleted = task.IsCompleted;
             task.IsCompleted = dto.IsCompleted;
             task.CompletedAt = dto.IsCompleted ? DateTime.UtcNow : null;
 
             await _context.SaveChangesAsync();
+
+            if (!wasCompleted && dto.IsCompleted)
+            {
+                await _publishEndpoint.Publish(new TaskCompletedEvent
+                {
+                    UserId = userId,
+                    TaskTitle = task.Title
+                });
+            }
+
             return true;
         }
+
 
         public async Task<bool> DeleteAsync(int userId, int taskId)
         {
