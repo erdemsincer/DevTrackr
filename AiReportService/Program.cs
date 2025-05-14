@@ -3,6 +3,7 @@ using AiReportService.Data;
 using AiReportService.External;
 using AiReportService.Jobs;
 using AiReportService.Services;
+using AiReportService.Settings;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,7 @@ builder.Services.AddMassTransit(x =>
 });
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 
 // JWT Ayarları
