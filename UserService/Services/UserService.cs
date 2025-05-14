@@ -47,6 +47,11 @@ namespace UserService.Services
         {
             return await _context.Users.ToListAsync();
         }
+        public async Task<string?> GetUserEmailByIdAsync(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return user?.Email;
+        }
 
     }
 }
