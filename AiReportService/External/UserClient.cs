@@ -19,5 +19,15 @@ namespace AiReportService.External
             var content = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<int>>(content) ?? new();
         }
+        public async Task<string?> GetUserEmailAsync(int userId)
+        {
+            var response = await _httpClient.GetAsync($"/api/User/{userId}/email");
+            if (!response.IsSuccessStatusCode) return null;
+
+            var content = await response.Content.ReadAsStringAsync();
+            var json = JsonDocument.Parse(content);
+            return json.RootElement.GetProperty("email").GetString();
+        }
+
     }
 }
