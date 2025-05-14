@@ -52,6 +52,16 @@ namespace UserService.Controllers
             return Ok(ids);
         }
 
+        [HttpGet("{id}/email")]
+        public async Task<IActionResult> GetEmail(int id)
+        {
+            var email = await _userService.GetUserEmailByIdAsync(id);
+            if (email == null)
+                return NotFound();
+
+            return Ok(new { email }); // ✅ JSON döndür
+        }
+
 
 
     }
