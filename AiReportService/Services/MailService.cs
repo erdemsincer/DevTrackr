@@ -1,34 +1,29 @@
-﻿using AiReportService.Settings;
-using Microsoft.Extensions.Options;
-using System.Net.Mail;
-using System.Net;
-using AiReportService.Models;
-using MimeKit;
+﻿using AiReportService.Models;
+using MailKit.Net.Smtp;
 using MailKit.Security;
+using MimeKit;
 
 namespace AiReportService.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration _config;
-
-        public EmailService(IConfiguration config)
-        {
-            _config = config;
-        }
-
         public async Task SendEmailAsync(MailRequest request)
         {
+            var from = Environment.GetEnvironmentVariable("MAIL_FROM")!;
+            var smtpHost = Environment.GetEnvironmentVariable("MAIL_SMTP_HOST")!;
+            var smtpPort = int.Parse(Environment.GetEnvironmentVariable("MAIL_SMTP_PORT")!);
+            var smtpUser = Environment.GetEnvironmentVariable("MAIL_SMTP_USER")!;
+            var smtpPass = Environment.GetEnvironmentVariable("MAIL_SMTP_PASS")!;
+
             var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse(_config["MailSettings:SenderEmail"]));
+            email.From.Add(MailboxAddress.Parse(from));
             email.To.Add(MailboxAddress.Parse(request.ToEmail));
             email.Subject = request.Subject;
             email.Body = new TextPart(MimeKit.Text.TextFormat.Plain) { Text = request.Body };
 
-            using var smtp = new MailKit.Net.Smtp.SmtpClient(); // ✅ doğru: MailKit
-
-            await smtp.ConnectAsync(_config["MailSettings:SmtpHost"], int.Parse(_config["MailSettings:SmtpPort"]!), SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(_config["MailSettings:Username"], _config["MailSettings:Password"]);
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(smtpUser, smtpPass);
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }
