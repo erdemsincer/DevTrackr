@@ -8,6 +8,7 @@ namespace UserService.Interfaces
         Task<UserDto?> GetProfileAsync(int userId);
         Task<bool> UpdateProfileAsync(int userId, UpdateUserDto dto);
         Task<List<User>> GetAllUsersAsync();
+        Task<string?> GetUserEmailByIdAsync(int id);
 
     }
 }
