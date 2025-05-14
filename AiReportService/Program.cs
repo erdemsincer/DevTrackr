@@ -44,6 +44,8 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 // JWT Ayarları
 var jwtSettings = builder.Configuration.GetSection("Jwt");
