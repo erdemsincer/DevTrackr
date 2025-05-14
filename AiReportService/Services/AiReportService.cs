@@ -1,6 +1,8 @@
 ﻿using AiReportService.Data;
 using AiReportService.Entities;
 using AiReportService.External;
+using AiReportService.Models;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace AiReportService.Services
@@ -13,6 +15,8 @@ namespace AiReportService.Services
         private readonly IPomodoroClient _pomodoroClient;
         private readonly OpenAiService _openAiService;
         private readonly IUserClient _userClient;
+        private readonly Services.IEmailService _mailService; // 👈 eklendi
+
 
         public AiReportService(
             AiReportDbContext context,
@@ -20,7 +24,8 @@ namespace AiReportService.Services
             ITaskClient taskClient,
             IPomodoroClient pomodoroClient,
             OpenAiService openAiService,
-            IUserClient userClient) // 👈 eklendi
+            IUserClient userClient,
+            Services.IEmailService mailService) // 👈 eklendi
         {
             _context = context;
             _activityClient = activityClient;
@@ -28,6 +33,7 @@ namespace AiReportService.Services
             _pomodoroClient = pomodoroClient;
             _openAiService = openAiService;
             _userClient = userClient;
+            _mailService = mailService;
         }
 
         public async Task<AiReport> GenerateReportAsync(int userId)
@@ -35,7 +41,6 @@ namespace AiReportService.Services
             var commits = await _activityClient.GetRecentCommitsAsync(userId);
             var tasks = await _taskClient.GetCompletedTasksAsync(userId);
             var pomodoros = await _pomodoroClient.GetCompletedPomodorosAsync(userId);
-
             var summary = await _openAiService.GenerateSummaryAsync(commits, tasks, pomodoros);
 
             var report = new AiReport
@@ -47,6 +52,18 @@ namespace AiReportService.Services
 
             _context.Reports.Add(report);
             await _context.SaveChangesAsync();
+
+            // ✉️ Kullanıcının e-postasına gönder
+            var email = await _userClient.GetUserEmailAsync(userId);
+            if (!string.IsNullOrEmpty(email))
+            {
+                await _mailService.SendEmailAsync(new MailRequest
+                {
+                    ToEmail = email,
+                    Subject = "Haftalık AI Raporun Hazır!",
+                    Body = summary
+                });
+            }
 
             return report;
         }
