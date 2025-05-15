@@ -1,0 +1,55 @@
+﻿.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #4f46e5;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+    .nav-links a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+        .nav-links a:hover {
+            color: #4f46e5;
+        }
+
+/* ✅ Çıkış Yap butonu */
+.logout-button {
+    margin-left: 1.5rem;
+    padding: 0.4rem 1rem;
+    background-color: #ef4444;
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+    .logout-button:hover {
+        background-color: #dc2626;
+    }
+.username {
+    margin-left: 1.5rem;
+    font-weight: 500;
+    color: #4f46e5;
+}
