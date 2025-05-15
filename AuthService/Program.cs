@@ -8,6 +8,24 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ✅ JWT Ayarları
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+// ✅ CORS Policy Tanımı
+var allowedOrigins = "_devtrackrCorsPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: allowedOrigins, policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Frontend
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // JWT ile cookie veya header gönderimi
+    });
+});
+
+// ✅ MassTransit - RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
@@ -19,14 +37,12 @@ builder.Services.AddMassTransit(x =>
         });
     });
 });
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
 // ✅ DbContext
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ✅ JWT Auth
+// ✅ JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -34,7 +50,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; // dev için
+    options.RequireHttpsMetadata = false; // Dev ortamı
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -48,12 +64,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// ✅ Swagger + JWT Desteği
+// ✅ Swagger + JWT desteği
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthService API", Version = "v1" });
 
-    // JWT Auth için Swagger UI ayarı
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header. Örn: Bearer {token}",
@@ -82,9 +97,10 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
-// Middleware
+// ✅ Middleware sırası
 app.UseHttpsRedirection();
-app.UseAuthentication(); // 👉 önce auth
+app.UseCors(allowedOrigins);     // 💥 CORS aktif
+app.UseAuthentication();         // 💥 JWT
 app.UseAuthorization();
 
 app.UseSwagger();
