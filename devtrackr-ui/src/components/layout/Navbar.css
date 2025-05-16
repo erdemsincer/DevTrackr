@@ -1,16 +1,18 @@
 ﻿.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
     background-color: white;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .logo {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 700;
     color: #4f46e5;
     text-decoration: none;
 }
@@ -18,38 +20,37 @@
 .nav-links {
     display: flex;
     align-items: center;
+    gap: 1.5rem;
 }
 
     .nav-links a {
-        margin-left: 1.5rem;
         text-decoration: none;
-        color: #333;
+        color: #374151;
         font-weight: 500;
-        transition: color 0.2s ease;
+        transition: color 0.2s ease-in-out;
     }
 
         .nav-links a:hover {
             color: #4f46e5;
         }
 
-/* ✅ Çıkış Yap butonu */
+.username {
+    font-weight: 600;
+    color: #1f2937;
+}
+
 .logout-button {
-    margin-left: 1.5rem;
-    padding: 0.4rem 1rem;
-    background-color: #ef4444;
-    color: white;
-    font-weight: 500;
+    padding: 0.4rem 0.9rem;
+    background-color: #e5e7eb; /* nötr gri */
     border: none;
     border-radius: 6px;
+    font-weight: 500;
+    color: #111827;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
     .logout-button:hover {
-        background-color: #dc2626;
+        background-color: #d1d5db;
+        transform: translateY(-1px);
     }
-.username {
-    margin-left: 1.5rem;
-    font-weight: 500;
-    color: #4f46e5;
-}
