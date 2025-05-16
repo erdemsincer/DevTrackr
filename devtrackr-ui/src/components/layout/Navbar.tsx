@@ -18,11 +18,14 @@ const Navbar = () => {
             <div className="nav-links">
                 <Link to="/">Dashboard</Link>
                 <Link to="/reports">Raporlar</Link>
+                <Link to="/pomodoro">Pomodoro</Link> {/* ✅ EKLENDİ */}
 
                 {isAuthenticated ? (
                     <>
                         <span className="username">👋 {user?.name}</span>
-                        <button onClick={handleLogout} className="logout-button">Çıkış Yap</button>
+                        <button onClick={handleLogout} className="logout-button">
+                            Çıkış Yap
+                        </button>
                     </>
                 ) : (
                     <>
