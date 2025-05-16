@@ -6,6 +6,7 @@ import Register from "../pages/auth/Register";
 import Dashboard from "../pages/dashboard/Dashboard";
 import ReportList from "../pages/reports/ReportList";
 import PomodoroPage from "../pages/pomodoro/PomodoroPage";
+import TaskPage from "../pages/task/TaskPage"; // ✅ EKLENDİ
 import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -19,7 +20,8 @@ export const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Dashboard /> },
                     { path: "reports", element: <ReportList /> },
-                    { path: "pomodoro", element: <PomodoroPage /> }, // ✅ EKLENDİ
+                    { path: "pomodoro", element: <PomodoroPage /> },
+                    { path: "tasks", element: <TaskPage /> }, // ✅ GÖREV SAYFASI EKLENDİ
                 ],
             },
         ],
