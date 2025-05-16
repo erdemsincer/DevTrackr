@@ -59,25 +59,21 @@ Tüm servisler token'dan gelen `userId` bilgisiyle çalışır.
 
 ## 📸 Ekran Görüntüleri
 
-### 🧠 AI Rapor Sayfası
+
 ![Image](https://github.com/user-attachments/assets/26e21c71-b2d6-42b1-a0cc-34c0c33025ea)
 
-### 🏠 Ana Dashboard
 ![Image](https://github.com/user-attachments/assets/19a03c0a-5820-428d-94d1-3beb3ad92677)
 
-### ✅ Görev (Task) Paneli
 ![Image](https://github.com/user-attachments/assets/66d7e6e1-5e26-4983-8931-bd8fd55d58ec)
 
-### ⏱ Pomodoro Sayacı
+
 ![Image](https://github.com/user-attachments/assets/d78ab99d-a7e8-4806-a96f-cbfaa9f7ba6e)
 
-### 📊 Haftalık Grafik Görünümü
+
 ![Image](https://github.com/user-attachments/assets/40632898-739b-4979-85f2-d16247ba15c0)
 
-### 📅 Takvim Üzerinden Görev ve Pomodoro İncelemesi
 ![Image](https://github.com/user-attachments/assets/a3f640bd-1ee9-4a2c-83c2-ab627b843f49)
 
-### 🔐 Giriş & Kayıt Arayüzü
 ![Image](https://github.com/user-attachments/assets/19cde80a-a8c5-4e02-bae0-8f64e88568dd)
 
 ---
