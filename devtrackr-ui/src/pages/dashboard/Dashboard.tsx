@@ -24,7 +24,6 @@ const Dashboard = () => {
                 <PomodoroCard />
                 <StatsCard />
 
-                {/* 🔗 Tüm raporları gör butonu */}
                 <div className="report-button-wrapper">
                     <button
                         className="go-report-button"
