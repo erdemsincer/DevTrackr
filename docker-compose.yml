@@ -79,7 +79,6 @@ services:
     networks:
       - devtrackr-net
 
-
   task-db-devtrackr:
     image: postgres:15
     container_name: task-db-devtrackr
@@ -150,7 +149,6 @@ services:
     networks:
       - devtrackr-net
 
-
   aireportservice-devtrackr:
     build:
       context: .
@@ -162,7 +160,7 @@ services:
       - taskservice-devtrackr
       - pomodoroservice-devtrackr
     env_file:
-      - .env                    # ✅ .env dosyasını ekledik
+      - .env
     environment:
       - ConnectionStrings__DefaultConnection=Host=aireport-db-devtrackr;Port=5432;Database=aireportdb;Username=admin;Password=admin123
     ports:
@@ -170,6 +168,15 @@ services:
     networks:
       - devtrackr-net
 
+  devtrackr-frontend:
+    build:
+      context: ./devtrackr-ui   
+      dockerfile: Dockerfile
+    container_name: devtrackr-frontend
+    ports:
+      - "5173:8080"
+    networks:
+      - devtrackr-net
 
 volumes:
   devtrackr_auth_pgdata:
@@ -177,8 +184,6 @@ volumes:
   devtrackr_task_pgdata:
   devtrackr_pomodoro_pgdata:
   devtrackr_aireport_pgdata:
-
-
 
 networks:
   devtrackr-net:

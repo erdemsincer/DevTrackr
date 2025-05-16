@@ -9,6 +9,16 @@ using PomodoroService.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy
+            .AllowAnyOrigin() // dev için serbest, prod’da sadece frontend host yazarsýn
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddMassTransit(x =>
 {
@@ -89,6 +99,8 @@ builder.Services.AddControllers();
 var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseCors("DevCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

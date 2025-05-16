@@ -2,6 +2,7 @@
 import { jwtDecode } from "jwt-decode"; // ❌ Bu yanlıştır
 
 interface JwtPayload {
+    id: number;
     name: string;
     email: string;
     role: string;
@@ -20,11 +21,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Token içeriğinden gerçek alanları al
 const parseJwtPayload = (raw: any): JwtPayload => ({
+    id: parseInt(raw["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]),
     name: raw["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
     email: raw["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"],
     role: raw["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
     exp: raw["exp"],
 });
+
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
