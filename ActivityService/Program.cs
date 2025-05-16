@@ -6,6 +6,15 @@ using System.Net.Http.Headers;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Token environment'tan alınıyor
 var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
@@ -85,6 +94,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseCors("DevCors");
 app.UseHttpsRedirection();
 app.UseAuthentication(); // 🔐 Auth middleware aktif olmalı
 app.UseAuthorization();
