@@ -39,7 +39,10 @@ namespace AiReportService.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetMyReports()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            Console.WriteLine($"🎯 Token içinden gelen userId: {userIdStr}");
+
+            var userId = int.Parse(userIdStr ?? "0");
             var reports = await _aiReportService.GetReportsByUserIdAsync(userId);
             return Ok(reports);
         }
