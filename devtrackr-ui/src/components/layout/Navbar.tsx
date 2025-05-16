@@ -18,7 +18,8 @@ const Navbar = () => {
             <div className="nav-links">
                 <Link to="/">Dashboard</Link>
                 <Link to="/reports">Raporlar</Link>
-                <Link to="/pomodoro">Pomodoro</Link> {/* ✅ EKLENDİ */}
+                <Link to="/pomodoro">Pomodoro</Link>
+                <Link to="/tasks">Görevler</Link> 
 
                 {isAuthenticated ? (
                     <>
